@@ -140,6 +140,8 @@ attributes too like C<rowspan>, C<colspan>).
 
 =head1 SEE ALSO
 
+L<Text::Table::HTML::DataTables>
+
 L<Text::Table::Tiny>
 
 L<Text::Table::Any>
