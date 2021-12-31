@@ -152,10 +152,8 @@ table caption.
 
 L<Text::Table::HTML::DataTables>
 
-L<Text::Table::Tiny>
-
 L<Text::Table::Any>
 
-See also L<Bencher::Scenario::TextTableModules>.
+L<Bencher::Scenario::TextTableModules>
 
 =cut
