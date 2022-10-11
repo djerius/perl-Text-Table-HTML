@@ -41,7 +41,10 @@ sub table {
         } else {
             if ($i == 1) { push @table, "<tbody>\n" }
         }
-        push @table, "<tr>";
+
+        my $has_bottom_border = grep { ref $_ eq 'HASH' && $_->{bottom_border} } @$row;
+
+        push @table, "<tr".($has_bottom_border ? " class=has_bottom_border" : "").">";
         for my $cell (@$row) {
             my ($text, $encode_text) = @_;
             if (ref $cell eq 'HASH') {
@@ -59,10 +62,12 @@ sub table {
             $text //= '';
             my $rowspan = int((ref $cell eq 'HASH' ? $cell->{rowspan} : undef) // 1);
             my $colspan = int((ref $cell eq 'HASH' ? $cell->{colspan} : undef) // 1);
+            my $align   = ref $cell eq 'HASH' ? $cell->{align} : undef;
             push @table,
                 ($in_header ? "<th" : "<td"),
                 ($rowspan > 1 ? " rowspan=$rowspan" : ""),
                 ($colspan > 1 ? " colspan=$colspan" : ""),
+                ($align       ? " align=\"$align\"" : ""),
                 ">",
                 $encode_text ? _encode($text) : $text,
                 $in_header ? "</th>" : "</td>";
