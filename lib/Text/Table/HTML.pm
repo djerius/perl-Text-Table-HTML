@@ -25,9 +25,9 @@ sub table {
 
     push @table, "<table>\n";
 
-    if (defined $params{title}) {
+    if (defined $params{caption}) {
         require HTML::Entities;
-        push @table, "<caption>".HTML::Entities::encode_entities($params{title})."</caption>\n";
+        push @table, "<caption>".HTML::Entities::encode_entities($params{caption})."</caption>\n";
     }
 
     # then the data
@@ -159,7 +159,7 @@ content) or hashref (with key C<text> to contain the cell text or C<raw_html> to
 contain the cell's raw HTML which won't be escaped further), and optionally
 attributes too like C<rowspan>, C<colspan>).
 
-=item * title
+=item * caption
 
 Optional. Str. If set, will add an HTML C<< <caption> >> element to set the
 table caption.
