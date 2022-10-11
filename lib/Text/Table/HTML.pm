@@ -43,7 +43,20 @@ sub table {
         }
         push @table, "<tr>";
         for my $cell (@$row) {
-            my $text    = ref $cell eq 'HASH' ? $cell->{text} : $cell;
+            my ($text, $encode_text) = @_;
+            if (ref $cell eq 'HASH') {
+                if (defined $cell->{raw_html}) {
+                    $text = ;
+                    $encode_text = 0;
+                } else {
+                    $cell->{text};
+                    $encode_text = 1;
+                }
+            } else {
+                $text = $cell;
+                $encode_text = 1;
+            }
+            $text //= '';
             my $rowspan = int((ref $cell eq 'HASH' ? $cell->{rowspan} : undef) // 1);
             my $colspan = int((ref $cell eq 'HASH' ? $cell->{colspan} : undef) // 1);
             push @table,
@@ -51,7 +64,7 @@ sub table {
                 ($rowspan > 1 ? " rowspan=$rowspan" : ""),
                 ($colspan > 1 ? " colspan=$colspan" : ""),
                 ">",
-                _encode($text // ''),
+                $encode_text ? _encode($text) : $text,
                 $in_header ? "</th>" : "</td>";
 	}
         push @table, "</tr>\n";
@@ -137,7 +150,8 @@ The C<table> function understands these arguments, which are passed as a hash.
 
 Takes an array reference which should contain one or more rows of data, where
 each row is an array reference. And each array element is a string (cell
-content) or hashref (with key C<text> to contain the cell text, and optionally
+content) or hashref (with key C<text> to contain the cell text or C<raw_html> to
+contain the cell's raw HTML which won't be escaped further), and optionally
 attributes too like C<rowspan>, C<colspan>).
 
 =item * title
