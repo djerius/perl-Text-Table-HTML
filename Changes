@@ -1,5 +1,7 @@
 0.008   2022-10-11  Released-By: PERLANCAR; Urgency: medium
 
+        - Mark rows that have 'bottom_border' cell attribute with a class.
+
         - Render 'align' cell attribute.
 
 
