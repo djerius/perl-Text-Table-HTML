@@ -46,10 +46,10 @@ sub table {
             my ($text, $encode_text) = @_;
             if (ref $cell eq 'HASH') {
                 if (defined $cell->{raw_html}) {
-                    $text = ;
+                    $text = $cell->{raw_html};
                     $encode_text = 0;
                 } else {
-                    $cell->{text};
+                    $text = $cell->{text};
                     $encode_text = 1;
                 }
             } else {
