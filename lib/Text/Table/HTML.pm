@@ -157,7 +157,7 @@ Takes an array reference which should contain one or more rows of data, where
 each row is an array reference. And each array element is a string (cell
 content) or hashref (with key C<text> to contain the cell text or C<raw_html> to
 contain the cell's raw HTML which won't be escaped further), and optionally
-attributes too like C<rowspan>, C<colspan>).
+other attributes: C<rowspan>, C<colspan>, C<align>, C<bottom_border>).
 
 =item * caption
 
