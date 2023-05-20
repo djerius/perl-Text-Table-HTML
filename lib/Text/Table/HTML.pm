@@ -39,7 +39,7 @@ sub table {
             if ($i == 0) { push @table, "<thead>\n"; $in_header++ }
             if ($i == 1) { push @table, "<tbody>\n" }
         } else {
-            if ($i == 1) { push @table, "<tbody>\n" }
+            if ($i == 0) { push @table, "<tbody>\n" }
         }
 
         my $has_bottom_border = grep { ref $_ eq 'HASH' && $_->{bottom_border} } @$row;
@@ -78,6 +78,7 @@ sub table {
         }
     }
 
+    push @table, "<tbody>\n" if ! @{$rows};
     push @table, "</tbody>\n";
     push @table, "</table>\n";
 
