@@ -26,17 +26,23 @@ sub table {
     push @table, "<table>\n";
 
     if (defined $params{caption}) {
-        require HTML::Entities;
-        push @table, "<caption>".HTML::Entities::encode_entities($params{caption})."</caption>\n";
+        push @table, "<caption>"._encode($params{caption})."</caption>\n";
     }
 
     # then the data
     my $i = -1;
-    foreach my $row ( @{ $rows }[0..$#$rows] ) {
+    foreach my $row ( @{ $rows } ) {
         $i++;
+
+        my $coltag = 'td';
+
         my $in_header;
         if ($params{header_row}) {
-            if ($i == 0) { push @table, "<thead>\n"; $in_header++ }
+            if ($i == 0) {
+                push @table, "<thead>\n";
+                $coltag = 'th';
+                $in_header++;
+            }
             if ($i == 1) { push @table, "<tbody>\n" }
         } else {
             if ($i == 0) { push @table, "<tbody>\n" }
@@ -46,31 +52,33 @@ sub table {
 
         push @table, "<tr".($has_bottom_border ? " class=has_bottom_border" : "").">";
         for my $cell (@$row) {
-            my ($text, $encode_text) = @_;
+
+            my ($text, $encode_text, $attr) = ( $cell, 1, '' );
+
             if (ref $cell eq 'HASH') {
+
                 if (defined $cell->{raw_html}) {
                     $text = $cell->{raw_html};
                     $encode_text = 0;
                 } else {
                     $text = $cell->{text};
-                    $encode_text = 1;
                 }
-            } else {
-                $text = $cell;
-                $encode_text = 1;
+
+                my $rowspan = int($cell->{rowspan}  // 1);
+                $attr .= " rowspan=$rowspan" if $rowspan > 1;
+
+                my $colspan = int($cell->{colspan}  // 1);
+                $attr .= " colspan=$colspan" if $colspan > 1;
+
+                $attr .= ' align="' . $cell->{align} . '"' if defined $cell->{align};
             }
+
             $text //= '';
-            my $rowspan = int((ref $cell eq 'HASH' ? $cell->{rowspan} : undef) // 1);
-            my $colspan = int((ref $cell eq 'HASH' ? $cell->{colspan} : undef) // 1);
-            my $align   = ref $cell eq 'HASH' ? $cell->{align} : undef;
+
             push @table,
-                ($in_header ? "<th" : "<td"),
-                ($rowspan > 1 ? " rowspan=$rowspan" : ""),
-                ($colspan > 1 ? " colspan=$colspan" : ""),
-                ($align       ? " align=\"$align\"" : ""),
-                ">",
-                $encode_text ? _encode($text) : $text,
-                $in_header ? "</th>" : "</td>";
+              '<' . $coltag . $attr . '>',
+              $encode_text ? _encode($text) : $text,
+              '</' . $coltag . '>';
 	}
         push @table, "</tr>\n";
         if ($i == 0 && $params{header_row}) {
