@@ -30,27 +30,31 @@ sub table {
     }
 
     # then the data
-    my $i = -1;
-    foreach my $row ( @{ $rows } ) {
-        $i++;
+    my $header_row   = $params{header_row} // 0;
+    my $needs_thead = !!$header_row;
+    my $needs_tbody = !!1;
+    foreach my $row ( @{$rows} ) {
 
         my $coltag = 'td';
 
-        my $in_header;
-        if ($params{header_row}) {
-            if ($i == 0) {
+        if ($header_row ) {
+            $coltag = 'th';
+
+            if ($needs_thead) {
                 push @table, "<thead>\n";
-                $coltag = 'th';
-                $in_header++;
+                $needs_thead = !!0;
             }
-            if ($i == 1) { push @table, "<tbody>\n" }
-        } else {
-            if ($i == 0) { push @table, "<tbody>\n" }
+        }
+
+        elsif ($needs_tbody) {
+            push @table, "<tbody>\n";
+            $needs_tbody = !!0;
         }
 
         my $has_bottom_border = grep { ref $_ eq 'HASH' && $_->{bottom_border} } @$row;
 
         push @table, "<tr".($has_bottom_border ? " class=has_bottom_border" : "").">";
+
         for my $cell (@$row) {
 
             my ($text, $encode_text, $attr) = ( $cell, 1, '' );
@@ -81,12 +85,13 @@ sub table {
               '</' . $coltag . '>';
 	}
         push @table, "</tr>\n";
-        if ($i == 0 && $params{header_row}) {
+
+        if ( $header_row && $header_row-- == 1 ) {
             push @table, "</thead>\n";
         }
     }
 
-    push @table, "<tbody>\n" if ! @{$rows};
+    push @table, "<tbody>\n" if $needs_tbody;
     push @table, "</tbody>\n";
     push @table, "</table>\n";
 

@@ -39,4 +39,17 @@ is ( table( rows => rows(), header_row => 1 ), <<'EOS', 'one header row' );
 </table>
 EOS
 
+is ( table( rows => rows(), header_row => 2 ), <<'EOS', 'two header rows' );
+<table>
+<thead>
+<tr><th>TH11</th><th>TH12</th></tr>
+<tr><th>TH21</th><th>TH22</th></tr>
+</thead>
+<tbody>
+<tr><td>TD11</td><td>TD12</td></tr>
+<tr><td>TD21</td><td>TD22</td></tr>
+</tbody>
+</table>
+EOS
+
 done_testing;
