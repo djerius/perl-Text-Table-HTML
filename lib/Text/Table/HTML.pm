@@ -51,14 +51,14 @@ sub table {
             $needs_tbody = !!0;
         }
 
-
         my $bottom_border;
 
         my @row;
 
         for my $cell (@$row) {
 
-            my ($text, $encode_text, $attr) = ( $cell, 1, '' );
+            my $text;
+            my $attr = '';
 
             if (ref $cell eq 'HASH') {
 
@@ -70,9 +70,8 @@ sub table {
 
                 if (defined $cell->{raw_html}) {
                     $text = $cell->{raw_html};
-                    $encode_text = 0;
                 } else {
-                    $text = $cell->{text};
+                    $text = _encode( $cell->{text} // '' );
                 }
 
                 my $rowspan = int($cell->{rowspan}  // 1);
@@ -83,13 +82,12 @@ sub table {
 
                 $attr .= ' align="' . $cell->{align} . '"' if defined $cell->{align};
             }
-
-            $text //= '';
+            else {
+                $text = _encode( $cell // '' );
+            }
 
             push @row,
-              '<' . $coltag . $attr . '>',
-              $encode_text ? _encode($text) : $text,
-              '</' . $coltag . '>';
+              '<' . $coltag . $attr . '>', $text, '</' . $coltag . '>';
 	}
 
         push @table,
