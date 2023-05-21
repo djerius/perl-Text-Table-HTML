@@ -51,15 +51,22 @@ sub table {
             $needs_tbody = !!0;
         }
 
-        my $has_bottom_border = grep { ref $_ eq 'HASH' && $_->{bottom_border} } @$row;
 
-        push @table, "<tr".($has_bottom_border ? " class=has_bottom_border" : "").">";
+        my $bottom_border;
+
+        my @row;
 
         for my $cell (@$row) {
 
             my ($text, $encode_text, $attr) = ( $cell, 1, '' );
 
             if (ref $cell eq 'HASH') {
+
+                # add a class attribute for bottom_border if
+                # any cell in the row has it set. once the attribute is set,
+                # no need to do the check again.
+                $bottom_border //=
+                  ($cell->{bottom_border} || undef) && " class=has_bottom_border";
 
                 if (defined $cell->{raw_html}) {
                     $text = $cell->{raw_html};
@@ -79,12 +86,16 @@ sub table {
 
             $text //= '';
 
-            push @table,
+            push @row,
               '<' . $coltag . $attr . '>',
               $encode_text ? _encode($text) : $text,
               '</' . $coltag . '>';
 	}
-        push @table, "</tr>\n";
+
+        push @table,
+          "<tr". ( $bottom_border // '' ) .">",
+          @row,
+          "</tr>\n";
 
         if ( $header_row && $header_row-- == 1 ) {
             push @table, "</thead>\n";

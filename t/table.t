@@ -5,9 +5,6 @@ use Text::Table::HTML;
 
 *table = \&Text::Table::HTML::table;
 
-sub rows {
-}
-
 is( table( rows => [ [ 'TD11', 'TD12' ],
                      [ 'TD21', 'TD22' ],
                  ] ), <<'EOS', 'simple table' );
