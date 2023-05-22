@@ -18,87 +18,91 @@ sub table {
     my %params = @_;
     my $rows = $params{rows} or die "Must provide rows!";
 
-    my $max_index = _max_array_index($rows);
-
     # here we go...
     my @table;
 
     push @table, "<table>\n";
 
     if (defined $params{caption}) {
-        require HTML::Entities;
-        push @table, "<caption>".HTML::Entities::encode_entities($params{caption})."</caption>\n";
+        push @table, "<caption>"._encode($params{caption})."</caption>\n";
     }
 
     # then the data
-    my $i = -1;
-    foreach my $row ( @{ $rows }[0..$#$rows] ) {
-        $i++;
-        my $in_header;
-        if ($params{header_row}) {
-            if ($i == 0) { push @table, "<thead>\n"; $in_header++ }
-            if ($i == 1) { push @table, "<tbody>\n" }
-        } else {
-            if ($i == 1) { push @table, "<tbody>\n" }
+    my $header_row   = $params{header_row} // 0;
+    my $needs_thead = !!$header_row;
+    my $needs_tbody = !!1;
+    foreach my $row ( @{$rows} ) {
+
+        my $coltag = 'td';
+
+        if ($header_row ) {
+            $coltag = 'th';
+
+            if ($needs_thead) {
+                push @table, "<thead>\n";
+                $needs_thead = !!0;
+            }
         }
 
-        my $has_bottom_border = grep { ref $_ eq 'HASH' && $_->{bottom_border} } @$row;
+        elsif ($needs_tbody) {
+            push @table, "<tbody>\n";
+            $needs_tbody = !!0;
+        }
 
-        push @table, "<tr".($has_bottom_border ? " class=has_bottom_border" : "").">";
+        my $bottom_border;
+
+        my @row;
+
         for my $cell (@$row) {
-            my ($text, $encode_text) = @_;
+
+            my $text;
+            my $attr = '';
+
             if (ref $cell eq 'HASH') {
+
+                # add a class attribute for bottom_border if
+                # any cell in the row has it set. once the attribute is set,
+                # no need to do the check again.
+                $bottom_border //=
+                  ($cell->{bottom_border} || undef) && " class=has_bottom_border";
+
                 if (defined $cell->{raw_html}) {
                     $text = $cell->{raw_html};
-                    $encode_text = 0;
                 } else {
-                    $text = $cell->{text};
-                    $encode_text = 1;
+                    $text = _encode( $cell->{text} // '' );
                 }
-            } else {
-                $text = $cell;
-                $encode_text = 1;
+
+                my $rowspan = int($cell->{rowspan}  // 1);
+                $attr .= " rowspan=$rowspan" if $rowspan > 1;
+
+                my $colspan = int($cell->{colspan}  // 1);
+                $attr .= " colspan=$colspan" if $colspan > 1;
+
+                $attr .= ' align="' . $cell->{align} . '"' if defined $cell->{align};
             }
-            $text //= '';
-            my $rowspan = int((ref $cell eq 'HASH' ? $cell->{rowspan} : undef) // 1);
-            my $colspan = int((ref $cell eq 'HASH' ? $cell->{colspan} : undef) // 1);
-            my $align   = ref $cell eq 'HASH' ? $cell->{align} : undef;
-            push @table,
-                ($in_header ? "<th" : "<td"),
-                ($rowspan > 1 ? " rowspan=$rowspan" : ""),
-                ($colspan > 1 ? " colspan=$colspan" : ""),
-                ($align       ? " align=\"$align\"" : ""),
-                ">",
-                $encode_text ? _encode($text) : $text,
-                $in_header ? "</th>" : "</td>";
+            else {
+                $text = _encode( $cell // '' );
+            }
+
+            push @row,
+              '<' . $coltag . $attr . '>', $text, '</' . $coltag . '>';
 	}
-        push @table, "</tr>\n";
-        if ($i == 0 && $params{header_row}) {
+
+        push @table,
+          "<tr". ( $bottom_border // '' ) .">",
+          @row,
+          "</tr>\n";
+
+        if ( $header_row && $header_row-- == 1 ) {
             push @table, "</thead>\n";
         }
     }
 
+    push @table, "<tbody>\n" if $needs_tbody;
     push @table, "</tbody>\n";
     push @table, "</table>\n";
 
     return join("", grep {$_} @table);
-}
-
-# FROM_MODULE: PERLANCAR::List::Util::PP
-# BEGIN_BLOCK: max
-sub max {
-    return undef unless @_; ## no critic: Subroutines::ProhibitExplicitReturnUndef
-    my $res = $_[0];
-    my $i = 0;
-    while (++$i < @_) { $res = $_[$i] if $_[$i] > $res }
-    $res;
-}
-# END_BLOCK: max
-
-# return highest top-index from all rows in case they're different lengths
-sub _max_array_index {
-    my $rows = shift;
-    return max( map { $#$_ } @$rows );
 }
 
 1;
