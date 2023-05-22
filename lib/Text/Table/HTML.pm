@@ -128,7 +128,8 @@ sub table {
 =head1 DESCRIPTION
 
 This module provides a single function, C<table>, which formats a
-two-dimensional array of data as HTML table.
+two-dimensional array of data as HTML table. Its interface is modelled after
+L<Text::Table::Tiny> 0.03.
 
 The example shown in the SYNOPSIS generates the following table:
 
@@ -155,10 +156,10 @@ The C<table> function understands these arguments, which are passed as a hash.
 
 =over
 
-=item * rows (aoaos)
+=item * rows
 
-Takes an array reference which should contain one or more rows of data, where
-each row is an array reference. And each array element is a string (cell
+Required. Array of array of (scalars or hashrefs). One or more rows of data,
+where each row is an array reference. And each array element is a string (cell
 content) or hashref (with key C<text> to contain the cell text or C<raw_html> to
 contain the cell's raw HTML which won't be escaped further), and optionally
 other attributes: C<rowspan>, C<colspan>, C<align>, C<bottom_border>).
@@ -168,7 +169,21 @@ other attributes: C<rowspan>, C<colspan>, C<align>, C<bottom_border>).
 Optional. Str. If set, will add an HTML C<< <caption> >> element to set the
 table caption.
 
+=item * header_row
+
+Optional. Integer. Default 0. Whether we should add header row(s) (rows inside
+C<< <thead> >> instead of C<< <tbody> >>). Support multiple header rows; you can
+set this argument to an integer larger than 1.
+
 =back
+
+
+=head1 COMPATIBILITY NOTES WITH TEXT::TABLE::TINY
+
+In C<Text::Table::HTML>, C<header_row> is an integer instead of boolean. It
+supports multiple header rows.
+
+Cells in C<rows> can be hashrefs instead of scalars.
 
 
 =head1 SEE ALSO
