@@ -18,8 +18,6 @@ sub table {
     my %params = @_;
     my $rows = $params{rows} or die "Must provide rows!";
 
-    my $max_index = _max_array_index($rows);
-
     # here we go...
     my @table;
 
@@ -105,23 +103,6 @@ sub table {
     push @table, "</table>\n";
 
     return join("", grep {$_} @table);
-}
-
-# FROM_MODULE: PERLANCAR::List::Util::PP
-# BEGIN_BLOCK: max
-sub max {
-    return undef unless @_; ## no critic: Subroutines::ProhibitExplicitReturnUndef
-    my $res = $_[0];
-    my $i = 0;
-    while (++$i < @_) { $res = $_[$i] if $_[$i] > $res }
-    $res;
-}
-# END_BLOCK: max
-
-# return highest top-index from all rows in case they're different lengths
-sub _max_array_index {
-    my $rows = shift;
-    return max( map { $#$_ } @$rows );
 }
 
 1;
