@@ -128,8 +128,8 @@ sub table {
 =head1 DESCRIPTION
 
 This module provides a single function, C<table>, which formats a
-two-dimensional array of data as HTML table. Its interface is modelled after
-L<Text::Table::Tiny> 0.03.
+two-dimensional array of data as HTML table. Its interface was first modelled
+after L<Text::Table::Tiny> 0.03.
 
 The example shown in the SYNOPSIS generates the following table:
 
