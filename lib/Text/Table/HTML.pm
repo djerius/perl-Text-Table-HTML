@@ -184,6 +184,11 @@ sub table {
                       unless $coltag eq 'th';
                     $attr .= ' scope="' . $cell->{scope} . '"'
                 }
+
+                # cleaner if in a loop, but that might slow things down
+                $attr .= ' class="' . $cell->{class} . '"' if defined $cell->{class};
+                $attr .= ' headers="' . $cell->{headers} . '"' if defined $cell->{headers};
+                $attr .= ' id="' . $cell->{id} . '"' if defined $cell->{id};
                 $attr .= ' style="' . $cell->{style} . '"' if defined $cell->{style};
             }
             else {
@@ -198,7 +203,6 @@ sub table {
           "<tr". ( $bottom_border // '' ) .">",
           @row,
           "</tr>\n";
-
     }
 
     push @table, "</thead>\n" if $needs_thead_close;
@@ -264,11 +268,13 @@ The C<table> function understands these arguments, which are passed as a hash.
 
 =item * rows
 
-Required. Array of array of (scalars or hashrefs). One or more rows of data,
-where each row is an array reference. And each array element is a string (cell
-content) or hashref (with key C<text> to contain the cell text or C<raw_html> to
-contain the cell's raw HTML which won't be escaped further), and optionally
-other attributes: C<rowspan>, C<colspan>, C<align>, C<style>, C<scope>, C<bottom_border>, C<tag>).
+Required. Array of array of (scalars or hashrefs). One or more rows of
+data, where each row is an array reference. And each array element is
+a string (cell content) or hashref (with key C<text> to contain the
+cell text or C<raw_html> to contain the cell's raw HTML which won't be
+escaped further), and optionally other attributes: C<align>,
+C<bottom_border>, C<class>, C<colspan>, C<headers>, C<id>, C<rowspan>,
+C<scope>, C<style>, C<tag>).
 
 The C<tag> attribute specifies the tag to use for that cell.  For example,
 
