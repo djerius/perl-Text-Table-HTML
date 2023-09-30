@@ -55,6 +55,7 @@ sub table {
 
         for my $cell (@$row) {
 
+            my $celltag = $coltag;
             my $text;
             my $attr = '';
 
@@ -79,13 +80,15 @@ sub table {
                 $attr .= " colspan=$colspan" if $colspan > 1;
 
                 $attr .= ' align="' . $cell->{align} . '"' if defined $cell->{align};
+
+                $celltag = $cell->{tag} if defined $cell->{tag};
             }
             else {
                 $text = _encode( $cell // '' );
             }
 
             push @row,
-              '<' . $coltag . $attr . '>', $text, '</' . $coltag . '>';
+              '<' . $celltag . $attr . '>', $text, '</' . $celltag . '>';
 	}
 
         push @table,
@@ -162,7 +165,20 @@ Required. Array of array of (scalars or hashrefs). One or more rows of data,
 where each row is an array reference. And each array element is a string (cell
 content) or hashref (with key C<text> to contain the cell text or C<raw_html> to
 contain the cell's raw HTML which won't be escaped further), and optionally
-other attributes: C<rowspan>, C<colspan>, C<align>, C<bottom_border>).
+other attributes: C<rowspan>, C<colspan>, C<align>, C<bottom_border>, C<tag>).
+
+The C<tag> attribute specifies the tag to use for that cell.  For example,
+
+  header_row => 1,
+  rows =>
+    [ [ '&nbsp', 'January', 'December' ],
+      [ { tag => 'th', text => 'Boots' } , 20, 30 ],
+      [ { tag => 'th', text => 'Frocks' } , 40, 50 ],
+    ]
+
+generates a table where each element in the first row is a header
+element, and the first element in subsequent rows is an element.
+
 
 =item * caption
 
