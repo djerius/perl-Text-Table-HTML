@@ -36,6 +36,27 @@ sub table {
         push @table, "<caption>"._encode($params{caption})."</caption>\n";
     }
 
+    if ( defined $params{colgroup} ) {
+        push @table, "<colgroup>\n";
+
+        for my $col ( @{ $params{colgroup} } ) {
+
+            my @tag = '<col';
+            if ( defined $col ) {
+                if ( 'HASH' eq ref $col ) {
+                    push @tag, qq{$_="$col->{$_}"} for keys %{$col};
+                }
+                else {
+                    push @tag, $col;
+                }
+            }
+            push @tag, '/>';
+            push @table, join( q{ }, @tag ), "\n";
+        }
+
+        push @table, "</colgroup>\n";
+    }
+
     # then the data
     my $header_row   = $params{header_row} // 0;
     my $needs_thead = !!$header_row;
@@ -210,6 +231,28 @@ set this argument to an integer larger than 1.
 =item * attr
 
 Optional. Hash.  The hash elements are added as attributes to the C<table> tag.
+
+=item * colgroup
+
+Optional. An array of scalars or hashes which define a C<colgroup> block.
+
+The array should contain one entry per column or per span of
+columns. If an entry is C<undef>, or an empty hash, then an empty C<col>
+tag will be added.
+
+Hashes are translated into tag attributes; scalars are put into the C<col>
+tag as is.  For example,
+
+  colgroup => [ undef, {}, q{span="2"}, { class => 'batman' } ]
+
+results in
+
+  <colgroup>
+  <col/>
+  <col/>
+  <col span="2" />
+  <col class="batman" />
+  </colgroup>
 
 =back
 
