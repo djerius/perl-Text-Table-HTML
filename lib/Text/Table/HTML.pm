@@ -59,24 +59,88 @@ sub table {
 
     # then the data
     my $header_row   = $params{header_row} // 0;
-    my $needs_thead = !!$header_row;
-    my $needs_tbody = !!1;
+    my $footer_row   = $params{footer_row} // 0;
+
+    my $footer_row_start;
+    my $footer_row_end;
+
+    # footer is directly after the header
+    if ( $footer_row > 0 ) {
+        $footer_row_start = $header_row;
+        $footer_row_end = $footer_row_start + $footer_row;
+        $footer_row = !!1;
+    }
+    # footer is at end
+    elsif ( $footer_row < 0 ) {
+        $footer_row_start = @{$rows} + $footer_row;
+        $footer_row_end = $footer_row_start - $footer_row;
+        $footer_row = !!1;
+    }
+
+    my $needs_thead_open = !!$header_row;
+    my $needs_thead_close = !!0;
+
+    my $needs_tbody_open = !!1;
+    my $add_tbody_open =!!1;
+    my $needs_tbody_close = !!0;
+
+    my $needs_tfoot_close = !!0;
+    my $idx = -1;
     foreach my $row ( @{$rows} ) {
+        ++$idx;
 
         my $coltag = 'td';
 
         if ($header_row ) {
+
             $coltag = 'th';
 
-            if ($needs_thead) {
+            if ($needs_thead_open) {
                 push @table, "<thead>\n";
-                $needs_thead = !!0;
+                $needs_thead_open = !!0;
+                $needs_thead_close = !!1;
+                $add_tbody_open = !!0;
+            }
+
+            elsif ( --$header_row == 0 ) {
+                push @table, "</thead>\n";
+                $needs_thead_close = !!0;
+                $add_tbody_open = $needs_tbody_open;
+                $coltag = 'td';
             }
         }
 
-        elsif ($needs_tbody) {
+        if ( $footer_row ) {
+
+            if ( $idx == $footer_row_start ) {
+
+                if ( $needs_thead_close ) {
+                    push @table, "</thead>\n";
+                    $needs_thead_close = !!0;
+                }
+
+                elsif ( $needs_tbody_close ) {
+                    push @table, "</tbody>\n";
+                    $needs_tbody_close = !!0;
+                }
+
+                push @table, "<tfoot>\n";
+                $add_tbody_open = !!0;
+                $needs_tfoot_close = !!1;
+            }
+
+            elsif ( $idx == $footer_row_end ) {
+                push @table, "</tfoot>\n";
+                $footer_row = $needs_tfoot_close = !!0;
+                $add_tbody_open = $needs_tbody_open;
+            }
+
+        }
+
+        if ($add_tbody_open) {
             push @table, "<tbody>\n";
-            $needs_tbody = !!0;
+            $add_tbody_open = $needs_tbody_open = !!0;
+            $needs_tbody_close = !!1;
         }
 
         my $bottom_border;
@@ -87,6 +151,7 @@ sub table {
 
             my $celltag = $coltag;
             my $text;
+            my $tag = $coltag;
             my $attr = '';
 
             if (ref $cell eq 'HASH') {
@@ -134,13 +199,13 @@ sub table {
           @row,
           "</tr>\n";
 
-        if ( $header_row && $header_row-- == 1 ) {
-            push @table, "</thead>\n";
-        }
     }
 
-    push @table, "<tbody>\n" if $needs_tbody;
-    push @table, "</tbody>\n";
+    push @table, "</thead>\n" if $needs_thead_close;
+    push @table, "</tfoot>\n" if $needs_tfoot_close;
+
+    push @table, "<tbody>\n" if $needs_tbody_open;
+    push @table, "</tbody>\n" if $needs_tbody_open || $needs_tbody_close;
     push @table, "</table>\n";
 
     return join("", grep {$_} @table);
@@ -253,6 +318,28 @@ results in
   <col span="2" />
   <col class="batman" />
   </colgroup>
+
+=item * footer_row
+
+Optional. Integer. Default 0. Whether we should add footer row(s)
+(rows inside C<< <tfoot> >> instead of C<< <tbody> >>). Supports
+multiple footer rows.
+
+
+=over
+
+=item *
+
+If the footer rows are found immediately after the header rows (if
+any) in the C<rows> array, set C<footer_row> to the number of rows.
+
+=item *
+
+If the footer rows are the last rows in C<rows>, set C<footer_row> to
+the I<negative> number of rows.
+
+=back
+
 
 =back
 
