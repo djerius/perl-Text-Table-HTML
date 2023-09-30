@@ -293,9 +293,26 @@ Optional. Integer. Default 0. Whether we should add header row(s) (rows inside
 C<< <thead> >> instead of C<< <tbody> >>). Support multiple header rows; you can
 set this argument to an integer larger than 1.
 
-=item * attr
+=item * footer_row
 
-Optional. Hash.  The hash elements are added as attributes to the C<table> tag.
+Optional. Integer. Default 0. Whether we should add footer row(s)
+(rows inside C<< <tfoot> >> instead of C<< <tbody> >>). Supports
+multiple footer rows.
+
+
+=over
+
+=item *
+
+If the footer rows are found immediately after the header rows (if
+any) in the C<rows> array, set C<footer_row> to the number of rows.
+
+=item *
+
+If the footer rows are the last rows in C<rows>, set C<footer_row> to
+the I<negative> number of rows.
+
+=back
 
 =item * colgroup
 
@@ -319,27 +336,9 @@ results in
   <col class="batman" />
   </colgroup>
 
-=item * footer_row
+=item * attr
 
-Optional. Integer. Default 0. Whether we should add footer row(s)
-(rows inside C<< <tfoot> >> instead of C<< <tbody> >>). Supports
-multiple footer rows.
-
-
-=over
-
-=item *
-
-If the footer rows are found immediately after the header rows (if
-any) in the C<rows> array, set C<footer_row> to the number of rows.
-
-=item *
-
-If the footer rows are the last rows in C<rows>, set C<footer_row> to
-the I<negative> number of rows.
-
-=back
-
+Optional. Hash.  The hash elements are added as attributes to the C<table> tag.
 
 =back
 
