@@ -26,7 +26,11 @@ sub table {
     # here we go...
     my @table;
 
-    push @table, "<table>\n";
+    my $attr =defined $params{attr}
+      ?  join q{ }, '', map { qq{$_="$params{attr}{$_}"} } keys %{$params{attr}}
+      : '';
+
+    push @table, "<table$attr>\n";
 
     if (defined $params{caption}) {
         push @table, "<caption>"._encode($params{caption})."</caption>\n";
@@ -202,6 +206,10 @@ table caption.
 Optional. Integer. Default 0. Whether we should add header row(s) (rows inside
 C<< <thead> >> instead of C<< <tbody> >>). Support multiple header rows; you can
 set this argument to an integer larger than 1.
+
+=item * attr
+
+Optional. Hash.  The hash elements are added as attributes to the C<table> tag.
 
 =back
 
