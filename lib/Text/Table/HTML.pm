@@ -27,6 +27,8 @@ sub table {
     my @table;
 
     my %attr = %{ delete($params{attr}) // {} };
+    $attr{id} = delete $params{id};
+    $attr{class} = delete $params{class};
 
     my $attr = keys %attr
       ?  join q{ }, '', map { qq{$_="$attr{$_}"} } grep defined( $attr{$_} ), keys %attr
@@ -353,6 +355,15 @@ results in
 =item * attr
 
 Optional. Hash.  The hash elements are added as attributes to the C<table> tag.
+
+=item * id
+
+Optional. Scalar.  The table tag's I<id> attribute.
+
+=item * class
+
+Optional. Scalar.  The table tag's I<class> attribute.
+
 
 =back
 
