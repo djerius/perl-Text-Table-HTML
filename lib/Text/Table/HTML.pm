@@ -21,25 +21,27 @@ sub _encode {
 
 sub table {
     my %params = @_;
-    my $rows = $params{rows} or die "Must provide rows!";
+    my $rows = delete $params{rows} or die "Must provide rows!";
 
     # here we go...
     my @table;
 
-    my $attr =defined $params{attr}
-      ?  join q{ }, '', map { qq{$_="$params{attr}{$_}"} } keys %{$params{attr}}
+    my %attr = %{ delete($params{attr}) // {} };
+
+    my $attr = keys %attr
+      ?  join q{ }, '', map { qq{$_="$attr{$_}"} } grep defined( $attr{$_} ), keys %attr
       : '';
 
     push @table, "<table$attr>\n";
 
-    if (defined $params{caption}) {
-        push @table, "<caption>"._encode($params{caption})."</caption>\n";
+    if (defined( my $caption = delete $params{caption} )) {
+        push @table, "<caption>"._encode($caption)."</caption>\n";
     }
 
-    if ( defined $params{colgroup} ) {
+    if ( defined( my $colgroup = delete $params{colgroup} ) ) {
         push @table, "<colgroup>\n";
 
-        for my $col ( @{ $params{colgroup} } ) {
+        for my $col ( @{ $colgroup } ) {
 
             my @tag = '<col';
             if ( defined $col ) {
@@ -57,9 +59,13 @@ sub table {
         push @table, "</colgroup>\n";
     }
 
-    # then the data
-    my $header_row   = $params{header_row} // 0;
-    my $footer_row   = $params{footer_row} // 0;
+    # then the header & footer
+    my $header_row   = delete $params{header_row} // 0;
+    my $footer_row   = delete $params{footer_row} // 0;
+
+    # check for unrecognized options
+    _croak( "unrecognized options: ", join q{, }, sort keys %params )
+      if keys %params;
 
     my $footer_row_start;
     my $footer_row_end;
@@ -86,6 +92,8 @@ sub table {
 
     my $needs_tfoot_close = !!0;
     my $idx = -1;
+
+    # then the data
     foreach my $row ( @{$rows} ) {
         ++$idx;
 
