@@ -27,7 +27,10 @@ sub table {
     my @table;
 
     my %attr = %{ delete($params{attr}) // {} };
-    $attr{$_} = delete $params{$_} for qw( id class style );
+    {
+        my @direct_attr = grep exists $params{$_}, qw( id class style );
+        $attr{@direct_attr} = delete @params{@direct_attr};
+    }
 
     my $attr = keys %attr
       ?  join q{ }, '', map { qq{$_="$attr{$_}"} } grep defined( $attr{$_} ), keys %attr
