@@ -9,6 +9,11 @@ use warnings;
 # DIST
 # VERSION
 
+sub _croak {
+    require Carp;
+    goto &Carp::croak;
+}
+
 sub _encode {
     state $load = do { require HTML::Entities };
     HTML::Entities::encode_entities(shift);
@@ -81,7 +86,15 @@ sub table {
 
                 $attr .= ' align="' . $cell->{align} . '"' if defined $cell->{align};
 
+
                 $celltag = $cell->{tag} if defined $cell->{tag};
+
+                if ( defined $cell->{scope} ) {
+                    _croak( "'scope' attribute is only valid in header cells" )
+                      unless $coltag eq 'th';
+                    $attr .= ' scope="' . $cell->{scope} . '"'
+                }
+                $attr .= ' style="' . $cell->{style} . '"' if defined $cell->{style};
             }
             else {
                 $text = _encode( $cell // '' );
@@ -165,7 +178,7 @@ Required. Array of array of (scalars or hashrefs). One or more rows of data,
 where each row is an array reference. And each array element is a string (cell
 content) or hashref (with key C<text> to contain the cell text or C<raw_html> to
 contain the cell's raw HTML which won't be escaped further), and optionally
-other attributes: C<rowspan>, C<colspan>, C<align>, C<bottom_border>, C<tag>).
+other attributes: C<rowspan>, C<colspan>, C<align>, C<style>, C<scope>, C<bottom_border>, C<tag>).
 
 The C<tag> attribute specifies the tag to use for that cell.  For example,
 
@@ -178,7 +191,6 @@ The C<tag> attribute specifies the tag to use for that cell.  For example,
 
 generates a table where each element in the first row is a header
 element, and the first element in subsequent rows is an element.
-
 
 =item * caption
 
