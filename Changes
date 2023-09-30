@@ -2,8 +2,8 @@
 
         - <table> element:
 
-           - add direct specification of 'id' and 'class' attributes
-             via the 'id' and 'class' parameters.
+           - add direct specification of 'id', 'class', and 'style'
+             attributes via the 'id', 'class', and 'style' parameters.
 
            - Add generic attributes via the 'attr' parameter
 

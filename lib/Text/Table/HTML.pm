@@ -27,8 +27,7 @@ sub table {
     my @table;
 
     my %attr = %{ delete($params{attr}) // {} };
-    $attr{id} = delete $params{id};
-    $attr{class} = delete $params{class};
+    $attr{$_} = delete $params{$_} for qw( id class style );
 
     my $attr = keys %attr
       ?  join q{ }, '', map { qq{$_="$attr{$_}"} } grep defined( $attr{$_} ), keys %attr
@@ -363,6 +362,10 @@ Optional. Scalar.  The table tag's I<id> attribute.
 =item * class
 
 Optional. Scalar.  The table tag's I<class> attribute.
+
+=item * style
+
+Optional. Scalar.  The table tag's I<style> attribute.
 
 
 =back
