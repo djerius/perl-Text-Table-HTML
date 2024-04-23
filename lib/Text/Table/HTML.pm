@@ -9,11 +9,6 @@ use warnings;
 # DIST
 # VERSION
 
-sub _croak {
-    require Carp;
-    goto &Carp::croak;
-}
-
 sub _encode {
     state $load = do { require HTML::Entities };
     HTML::Entities::encode_entities(shift);
@@ -68,7 +63,7 @@ sub table {
     my $footer_row   = delete $params{footer_row} // 0;
 
     # check for unrecognized options
-    _croak( "unrecognized options: ", join q{, }, sort keys %params )
+    die( "unrecognized options: ", join q{, }, sort keys %params )
       if keys %params;
 
     my $footer_row_start;
@@ -192,7 +187,7 @@ sub table {
                 $celltag = $cell->{tag} if defined $cell->{tag};
 
                 if ( defined $cell->{scope} ) {
-                    _croak( "'scope' attribute is only valid in header cells" )
+                    die( "'scope' attribute is only valid in header cells" )
                       unless $coltag eq 'th';
                     $attr .= ' scope="' . $cell->{scope} . '"'
                 }
