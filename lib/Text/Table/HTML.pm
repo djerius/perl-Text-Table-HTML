@@ -33,6 +33,9 @@ sub table {
       keys %attr
       : '';
 
+    # set all rows bottom_border if requested.
+    my $bottom_border_rows = delete($params{separate_rows});
+
     push @table, "<table$attr>\n";
 
     if ( defined( my $caption = delete $params{caption} ) ) {
@@ -173,7 +176,7 @@ sub table {
                 # any cell in the row has it set. once the attribute is set,
                 # no need to do the check again.
                 $bottom_border //=
-                  ( $cell->{bottom_border} || undef )
+                  ( $bottom_border_rows || $cell->{bottom_border} || undef )
                   && " class=has_bottom_border";
 
                 if ( defined $cell->{raw_html} ) {
@@ -295,7 +298,7 @@ C<align>,
 C<bottom_border>,
 C<colspan>,
 C<html_class>,
-C<html_elemen>,
+C<html_element>,
 C<html_headers>,
 C<html_id>,
 C<html_scope>,
@@ -305,6 +308,9 @@ C<rowspan>
 
 The C<html_element> attribute specifies the name of the HTML element
 to use for that cell. It defaults to C<th> for header rows and C<td> for data rows.
+
+If the C<bottom_border> attribute is set, the row element will have a
+class attribute of C<has_bottom_border>.
 
 For example,
 
@@ -348,6 +354,11 @@ If the footer rows are the last rows in C<rows>, set C<footer_row> to
 the I<negative> number of rows.
 
 =back
+
+=item * separate_rows
+
+Boolean. Optional. Default 0.  If set to true is equivalent to
+setting the C<bottom_border> attribute for each row.
 
 =item * html_colgroup
 
