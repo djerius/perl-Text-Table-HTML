@@ -5,7 +5,7 @@ use Text::Table::HTML;
 
 *table = \&Text::Table::HTML::table;
 
-is( table( rows => [ [  { tag => 'th', text => 'TD11' }, { text => 'TD12' } ],
+is( table( rows => [ [  { html_element => 'th', text => 'TD11' }, { text => 'TD12' } ],
                  ] ), <<'EOS', 'coltag' );
 <table>
 <tbody>

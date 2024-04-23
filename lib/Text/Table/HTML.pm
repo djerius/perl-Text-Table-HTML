@@ -21,10 +21,10 @@ sub table {
     # here we go...
     my @table;
 
-    my %attr = %{ delete($params{attr}) // {} };
+    my %attr = %{ delete($params{html_attr}) // {} };
     {
-        my @direct_attr = grep exists $params{$_}, qw( id class style );
-        $attr{@direct_attr} = delete @params{@direct_attr};
+        my @direct_attr = grep exists $params{"html_$_"}, qw( id class style );
+        $attr{@direct_attr} = delete @params{map "html_$_", @direct_attr};
     }
 
     my $attr = keys %attr
@@ -37,22 +37,22 @@ sub table {
         push @table, "<caption>"._encode($caption)."</caption>\n";
     }
 
-    if ( defined( my $colgroup = delete $params{colgroup} ) ) {
+    if ( defined( my $colgroup = delete $params{html_colgroup} ) ) {
         push @table, "<colgroup>\n";
 
         for my $col ( @{ $colgroup } ) {
 
-            my @tag = '<col';
+            my @element = '<col';
             if ( defined $col ) {
                 if ( 'HASH' eq ref $col ) {
-                    push @tag, qq{$_="$col->{$_}"} for keys %{$col};
+                    push @element, qq{$_="$col->{$_}"} for keys %{$col};
                 }
                 else {
-                    push @tag, $col;
+                    push @element, $col;
                 }
             }
-            push @tag, '/>';
-            push @table, join( q{ }, @tag ), "\n";
+            push @element, '/>';
+            push @table, join( q{ }, @element ), "\n";
         }
 
         push @table, "</colgroup>\n";
@@ -96,11 +96,11 @@ sub table {
     foreach my $row ( @{$rows} ) {
         ++$idx;
 
-        my $coltag = 'td';
+        my $col_tag = 'td';
 
         if ($header_row ) {
 
-            $coltag = 'th';
+            $col_tag = 'th';
 
             if ($needs_thead_open) {
                 push @table, "<thead>\n";
@@ -113,7 +113,7 @@ sub table {
                 push @table, "</thead>\n";
                 $needs_thead_close = !!0;
                 $add_tbody_open = $needs_tbody_open;
-                $coltag = 'td';
+                $col_tag = 'td';
             }
         }
 
@@ -156,9 +156,9 @@ sub table {
 
         for my $cell (@$row) {
 
-            my $celltag = $coltag;
+            my $cell_tag = $col_tag;
             my $text;
-            my $tag = $coltag;
+            my $tag = $col_tag;
             my $attr = '';
 
             if (ref $cell eq 'HASH') {
@@ -184,26 +184,26 @@ sub table {
                 $attr .= ' align="' . $cell->{align} . '"' if defined $cell->{align};
 
 
-                $celltag = $cell->{tag} if defined $cell->{tag};
+                $cell_tag = $cell->{html_element} if defined $cell->{html_element};
 
-                if ( defined $cell->{scope} ) {
-                    die( "'scope' attribute is only valid in header cells" )
-                      unless $coltag eq 'th';
-                    $attr .= ' scope="' . $cell->{scope} . '"'
+                if ( defined $cell->{html_scope} ) {
+                    die( "'html_scope' attribute is only valid in header cells" )
+                      unless $col_tag eq 'th';
+                    $attr .= ' scope="' . $cell->{html_scope} . '"'
                 }
 
                 # cleaner if in a loop, but that might slow things down
-                $attr .= ' class="' . $cell->{class} . '"' if defined $cell->{class};
-                $attr .= ' headers="' . $cell->{headers} . '"' if defined $cell->{headers};
-                $attr .= ' id="' . $cell->{id} . '"' if defined $cell->{id};
-                $attr .= ' style="' . $cell->{style} . '"' if defined $cell->{style};
+                $attr .= ' class="' . $cell->{html_class} . '"' if defined $cell->{html_class};
+                $attr .= ' headers="' . $cell->{html_headers} . '"' if defined $cell->{html_headers};
+                $attr .= ' id="' . $cell->{html_id} . '"' if defined $cell->{html_id};
+                $attr .= ' style="' . $cell->{html_style} . '"' if defined $cell->{html_style};
             }
             else {
                 $text = _encode( $cell // '' );
             }
 
             push @row,
-              '<' . $celltag . $attr . '>', $text, '</' . $celltag . '>';
+              '<' . $cell_tag . $attr . '>', $text, '</' . $cell_tag . '>';
 	}
 
         push @table,
@@ -276,24 +276,36 @@ The C<table> function understands these arguments, which are passed as a hash.
 =item * rows
 
 Required. Array of array of (scalars or hashrefs). One or more rows of
-data, where each row is an array reference. And each array element is
+data, where each row is an array reference. Each array element is
 a string (cell content) or hashref (with key C<text> to contain the
 cell text or C<raw_html> to contain the cell's raw HTML which won't be
-escaped further), and optionally other attributes: C<align>,
-C<bottom_border>, C<class>, C<colspan>, C<headers>, C<id>, C<rowspan>,
-C<scope>, C<style>, C<tag>).
+escaped further), and optionally other cell and HTML attributes:
+C<align>,
+C<bottom_border>,
+C<colspan>,
+C<html_class>,
+C<html_elemen>,
+C<html_headers>,
+C<html_id>,
+C<html_scope>,
+C<html_style>,
+C<rowspan>
+).
 
-The C<tag> attribute specifies the tag to use for that cell.  For example,
+The C<html_element> attribute specifies the name of the HTML element
+to use for that cell. It defaults to C<th> for header rows and C<td> for data rows.
+
+For example,
 
   header_row => 1,
   rows =>
     [ [ '&nbsp', 'January', 'December' ],
-      [ { tag => 'th', text => 'Boots' } , 20, 30 ],
-      [ { tag => 'th', text => 'Frocks' } , 40, 50 ],
+      [ { html_element => 'th', text => 'Boots' } , 20, 30 ],
+      [ { html_element => 'th', text => 'Frocks' } , 40, 50 ],
     ]
 
-generates a table where each element in the first row is a header
-element, and the first element in subsequent rows is an element.
+generates a table where each entry in the first row is a header
+element, and the first entry in subsequent rows is an element.
 
 =item * caption
 
@@ -312,7 +324,6 @@ Optional. Integer. Default 0. Whether we should add footer row(s)
 (rows inside C<< <tfoot> >> instead of C<< <tbody> >>). Supports
 multiple footer rows.
 
-
 =over
 
 =item *
@@ -327,18 +338,37 @@ the I<negative> number of rows.
 
 =back
 
-=item * colgroup
+=item * html_colgroup
 
 Optional. An array of scalars or hashes which define a C<colgroup> block.
 
 The array should contain one entry per column or per span of
-columns. If an entry is C<undef>, or an empty hash, then an empty C<col>
-tag will be added.
+columns.  Each entry will result in a new C<col> element, with the following
+mapping:
 
-Hashes are translated into tag attributes; scalars are put into the C<col>
-tag as is.  For example,
+=over
 
-  colgroup => [ undef, {}, q{span="2"}, { class => 'batman' } ]
+=item * undefined
+
+If an entry is C<undef>,then an empty C<col> element will be added.
+
+=item * hash
+
+A hash is translated into element attributes named after
+its keys.
+
+Empty hashes result in an empty C<col> element.
+
+=item * scalars
+
+A scalar must be a string containig a complete specification of an attribute,
+and is inserted verbatim into the element.
+
+=back
+
+For example,
+
+  html_colgroup => [ undef, {}, q{span="2"}, { class => 'batman' } ]
 
 results in
 
@@ -349,21 +379,21 @@ results in
   <col class="batman" />
   </colgroup>
 
-=item * attr
+=item * html_attr
 
-Optional. Hash.  The hash elements are added as attributes to the C<table> tag.
+Optional. Hash.  The hash entries are added as attributes to the C<table> HTML element.
 
-=item * id
+=item * html_id
 
-Optional. Scalar.  The table tag's I<id> attribute.
+Optional. Scalar.  The I<table> element's I<id> attribute.
 
-=item * class
+=item * html_class
 
-Optional. Scalar.  The table tag's I<class> attribute.
+Optional. Scalar.  The I<table> element's I<class> attribute.
 
-=item * style
+=item * html_style
 
-Optional. Scalar.  The table tag's I<style> attribute.
+Optional. Scalar.  The I<table> element's I<style> attribute.
 
 
 =back

@@ -13,7 +13,7 @@ sub rows {
 }
 
 is ( table( rows => rows(),
-            colgroup => [ undef, {}, q{span="2"}, { class => 'batman' } ]
+            html_colgroup => [ undef, {}, q{span="2"}, { class => 'batman' } ]
         ), <<'EOS', 'no header' );
 <table>
 <colgroup>

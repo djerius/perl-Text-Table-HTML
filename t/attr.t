@@ -5,7 +5,7 @@ use Text::Table::HTML;
 
 *table = \&Text::Table::HTML::table;
 
-is( table( attr => { style => 'border: 3px solid purple;',  },
+is( table( html_attr => { style => 'border: 3px solid purple;',  },
            rows => [ [ 1..2 ],
                  ] ), <<'EOS', 'table attr' );
 <table style="border: 3px solid purple;">
@@ -17,7 +17,7 @@ EOS
 
 
 is( table( header_row => 1,
-           rows => [ [ { text => 'text', align => 'left', scope => 'col', style => "timeless" }  ],
+           rows => [ [ { text => 'text', align => 'left', html_scope => 'col', html_style => "timeless" }  ],
                  ] ), <<'EOS', 'cell attr' );
 <table>
 <thead>
