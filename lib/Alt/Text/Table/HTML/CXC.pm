@@ -4,7 +4,7 @@ use Alt::Assert;
 
 # ABSTRACT: Alternate CXC version of Text::Table::HTML
 
-our $VERSION = 0.101;
+our $VERSION = 0.102;
 1;
 
 __END__
