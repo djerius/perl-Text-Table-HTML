@@ -16,51 +16,56 @@ sub _encode {
 
 sub table {
     my %params = @_;
-    my $rows = delete $params{rows} or die "Must provide rows!";
+    my $rows   = delete $params{rows} or die "Must provide rows!";
 
     # here we go...
     my @table;
 
-    my %attr = %{ delete($params{html_attr}) // {} };
+    my %attr = %{ delete( $params{html_attr} ) // {} };
     {
         my @direct_attr = grep exists $params{"html_$_"}, qw( id class style );
-        $attr{@direct_attr} = delete @params{map "html_$_", @direct_attr};
+        $attr{@direct_attr} = delete @params{ map "html_$_", @direct_attr };
     }
 
-    my $attr = keys %attr
-      ?  join q{ }, '', map { qq{$_="$attr{$_}"} } grep defined( $attr{$_} ), keys %attr
+    my $attr =
+      keys %attr
+      ? join q{ }, '', map { qq{$_="$attr{$_}"} } grep defined( $attr{$_} ),
+      keys %attr
       : '';
 
     push @table, "<table$attr>\n";
 
-    if (defined( my $caption = delete $params{caption} )) {
-        push @table, "<caption>"._encode($caption)."</caption>\n";
+    if ( defined( my $caption = delete $params{caption} ) ) {
+        push @table, "<caption>" . _encode($caption) . "</caption>\n";
     }
 
     if ( defined( my $colgroup = delete $params{html_colgroup} ) ) {
-        push @table, "<colgroup>\n";
 
-        for my $col ( @{ $colgroup } ) {
+        if (@$colgroup) {
+            push @table, "<colgroup>\n";
 
-            my @element = '<col';
-            if ( defined $col ) {
-                if ( 'HASH' eq ref $col ) {
-                    push @element, qq{$_="$col->{$_}"} for keys %{$col};
+            for my $col ( @{$colgroup} ) {
+
+                my @element = '<col';
+                if ( defined $col ) {
+                    if ( 'HASH' eq ref $col ) {
+                        push @element, qq{$_="$col->{$_}"} for keys %{$col};
+                    }
+                    else {
+                        push @element, $col;
+                    }
                 }
-                else {
-                    push @element, $col;
-                }
+                push @element, '/>';
+                push @table, join( q{ }, @element ), "\n";
             }
-            push @element, '/>';
-            push @table, join( q{ }, @element ), "\n";
-        }
 
-        push @table, "</colgroup>\n";
+            push @table, "</colgroup>\n";
+        }
     }
 
     # then the header & footer
-    my $header_row   = delete $params{header_row} // 0;
-    my $footer_row   = delete $params{footer_row} // 0;
+    my $header_row = delete $params{header_row} // 0;
+    my $footer_row = delete $params{footer_row} // 0;
 
     # check for unrecognized options
     die( "unrecognized options: ", join q{, }, sort keys %params )
@@ -72,25 +77,26 @@ sub table {
     # footer is directly after the header
     if ( $footer_row > 0 ) {
         $footer_row_start = $header_row;
-        $footer_row_end = $footer_row_start + $footer_row;
-        $footer_row = !!1;
+        $footer_row_end   = $footer_row_start + $footer_row;
+        $footer_row       = !!1;
     }
+
     # footer is at end
     elsif ( $footer_row < 0 ) {
         $footer_row_start = @{$rows} + $footer_row;
-        $footer_row_end = $footer_row_start - $footer_row;
-        $footer_row = !!1;
+        $footer_row_end   = $footer_row_start - $footer_row;
+        $footer_row       = !!1;
     }
 
-    my $needs_thead_open = !!$header_row;
+    my $needs_thead_open  = !!$header_row;
     my $needs_thead_close = !!0;
 
-    my $needs_tbody_open = !!1;
-    my $add_tbody_open =!!1;
+    my $needs_tbody_open  = !!1;
+    my $add_tbody_open    = !!1;
     my $needs_tbody_close = !!0;
 
     my $needs_tfoot_close = !!0;
-    my $idx = -1;
+    my $idx               = -1;
 
     # then the data
     foreach my $row ( @{$rows} ) {
@@ -98,47 +104,47 @@ sub table {
 
         my $col_tag = 'td';
 
-        if ($header_row ) {
+        if ($header_row) {
 
             $col_tag = 'th';
 
             if ($needs_thead_open) {
                 push @table, "<thead>\n";
-                $needs_thead_open = !!0;
+                $needs_thead_open  = !!0;
                 $needs_thead_close = !!1;
-                $add_tbody_open = !!0;
+                $add_tbody_open    = !!0;
             }
 
             elsif ( --$header_row == 0 ) {
                 push @table, "</thead>\n";
                 $needs_thead_close = !!0;
-                $add_tbody_open = $needs_tbody_open;
-                $col_tag = 'td';
+                $add_tbody_open    = $needs_tbody_open;
+                $col_tag           = 'td';
             }
         }
 
-        if ( $footer_row ) {
+        if ($footer_row) {
 
             if ( $idx == $footer_row_start ) {
 
-                if ( $needs_thead_close ) {
+                if ($needs_thead_close) {
                     push @table, "</thead>\n";
                     $needs_thead_close = !!0;
                 }
 
-                elsif ( $needs_tbody_close ) {
+                elsif ($needs_tbody_close) {
                     push @table, "</tbody>\n";
                     $needs_tbody_close = !!0;
                 }
 
                 push @table, "<tfoot>\n";
-                $add_tbody_open = !!0;
+                $add_tbody_open    = !!0;
                 $needs_tfoot_close = !!1;
             }
 
             elsif ( $idx == $footer_row_end ) {
                 push @table, "</tfoot>\n";
-                $footer_row = $needs_tfoot_close = !!0;
+                $footer_row     = $needs_tfoot_close = !!0;
                 $add_tbody_open = $needs_tbody_open;
             }
 
@@ -146,7 +152,7 @@ sub table {
 
         if ($add_tbody_open) {
             push @table, "<tbody>\n";
-            $add_tbody_open = $needs_tbody_open = !!0;
+            $add_tbody_open    = $needs_tbody_open = !!0;
             $needs_tbody_close = !!1;
         }
 
@@ -158,45 +164,52 @@ sub table {
 
             my $cell_tag = $col_tag;
             my $text;
-            my $tag = $col_tag;
+            my $tag  = $col_tag;
             my $attr = '';
 
-            if (ref $cell eq 'HASH') {
+            if ( ref $cell eq 'HASH' ) {
 
                 # add a class attribute for bottom_border if
                 # any cell in the row has it set. once the attribute is set,
                 # no need to do the check again.
                 $bottom_border //=
-                  ($cell->{bottom_border} || undef) && " class=has_bottom_border";
+                  ( $cell->{bottom_border} || undef )
+                  && " class=has_bottom_border";
 
-                if (defined $cell->{raw_html}) {
+                if ( defined $cell->{raw_html} ) {
                     $text = $cell->{raw_html};
-                } else {
+                }
+                else {
                     $text = _encode( $cell->{text} // '' );
                 }
 
-                my $rowspan = int($cell->{rowspan}  // 1);
+                my $rowspan = int( $cell->{rowspan} // 1 );
                 $attr .= " rowspan=$rowspan" if $rowspan > 1;
 
-                my $colspan = int($cell->{colspan}  // 1);
+                my $colspan = int( $cell->{colspan} // 1 );
                 $attr .= " colspan=$colspan" if $colspan > 1;
 
-                $attr .= ' align="' . $cell->{align} . '"' if defined $cell->{align};
+                $attr .= ' align="' . $cell->{align} . '"'
+                  if defined $cell->{align};
 
-
-                $cell_tag = $cell->{html_element} if defined $cell->{html_element};
+                $cell_tag = $cell->{html_element}
+                  if defined $cell->{html_element};
 
                 if ( defined $cell->{html_scope} ) {
-                    die( "'html_scope' attribute is only valid in header cells" )
+                    die("'html_scope' attribute is only valid in header cells")
                       unless $col_tag eq 'th';
-                    $attr .= ' scope="' . $cell->{html_scope} . '"'
+                    $attr .= ' scope="' . $cell->{html_scope} . '"';
                 }
 
                 # cleaner if in a loop, but that might slow things down
-                $attr .= ' class="' . $cell->{html_class} . '"' if defined $cell->{html_class};
-                $attr .= ' headers="' . $cell->{html_headers} . '"' if defined $cell->{html_headers};
-                $attr .= ' id="' . $cell->{html_id} . '"' if defined $cell->{html_id};
-                $attr .= ' style="' . $cell->{html_style} . '"' if defined $cell->{html_style};
+                $attr .= ' class="' . $cell->{html_class} . '"'
+                  if defined $cell->{html_class};
+                $attr .= ' headers="' . $cell->{html_headers} . '"'
+                  if defined $cell->{html_headers};
+                $attr .= ' id="' . $cell->{html_id} . '"'
+                  if defined $cell->{html_id};
+                $attr .= ' style="' . $cell->{html_style} . '"'
+                  if defined $cell->{html_style};
             }
             else {
                 $text = _encode( $cell // '' );
@@ -204,25 +217,23 @@ sub table {
 
             push @row,
               '<' . $cell_tag . $attr . '>', $text, '</' . $cell_tag . '>';
-	}
+        }
 
-        push @table,
-          "<tr". ( $bottom_border // '' ) .">",
-          @row,
-          "</tr>\n";
+        push @table, "<tr" . ( $bottom_border // '' ) . ">", @row, "</tr>\n";
     }
 
     push @table, "</thead>\n" if $needs_thead_close;
     push @table, "</tfoot>\n" if $needs_tfoot_close;
 
-    push @table, "<tbody>\n" if $needs_tbody_open;
+    push @table, "<tbody>\n"  if $needs_tbody_open;
     push @table, "</tbody>\n" if $needs_tbody_open || $needs_tbody_close;
     push @table, "</table>\n";
 
-    return join("", grep {$_} @table);
+    return join( "", grep { $_ } @table );
 }
 
 1;
+
 #ABSTRACT: Generate HTML table
 
 =for Pod::Coverage ^(max)$
