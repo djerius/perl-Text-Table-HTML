@@ -1,19 +1,19 @@
+0.011   2024-06-13  Released-By: PERLANCAR; Urgency: medium
 
+        [TABLE ELEMENT]
 
-        - <table> element:
+        - Allow direct specification of 'id', 'class', and 'style' attributes
+          via the 'id', 'class', and 'style' parameters (DJERIUS).
 
-           - add direct specification of 'id', 'class', and 'style'
-             attributes via the 'id', 'class', and 'style' parameters.
+        - Add generic attributes via the 'attr' parameter (DJERIUS).
 
-           - Add generic attributes via the 'attr' parameter
+        - Add <colgroup> and <tfoot> elements (DJERIUS).
 
-           - add <colgroup> and <tfoot> elements
+        [TABLE CELL ELEMENTS]
 
-        - table cells:
+        - Add 'class', 'header', 'id', 'scope', 'style' attributes (DJERIUS).
 
-           - Add 'class', 'header', 'id', 'scope', 'style' attributes
-
-           - allow specification of the type of cell (e.g. 'th' or 'td')
+        - Allow specification of the type of cell (e.g. 'th' or 'td') (DJERIUS).
 
 
 0.010   2023-05-22  Released-By: PERLANCAR; Urgency: medium
