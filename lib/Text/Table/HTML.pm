@@ -232,7 +232,7 @@ sub table {
     push @table, "</tbody>\n" if $needs_tbody_open || $needs_tbody_close;
     push @table, "</table>\n";
 
-    return join( "", grep { $_ } @table );
+    return join( "", @table );
 }
 
 1;
