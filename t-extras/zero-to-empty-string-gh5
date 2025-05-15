@@ -1,0 +1,37 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Text::Table::HTML;
+use HTML::Entities;
+
+$|++;
+$, = "|";
+$\ = "\n";
+
+my @output;
+
+while ( <DATA> ) {
+    chomp;
+    my @rec = split '\|', $_, -1;
+    push @output, [ @rec ];
+}
+
+produce_output( \@output );
+
+sub produce_output {
+    my $rows = shift;
+    my $body	= decode_entities( Text::Table::HTML::table(
+			rows => $rows,
+			header_row => 1,
+		    )
+		);
+    print $body;
+}
+__DATA__
+4 The Field|FTF400000|FTF400000|471
+4 The Field|FTF400001|FTF400001|60
+4 The Field|FTF800000|FTF800000|67
+4 The Field|FTF800001|FTF800001|0
+4 The Field|FTF800002|FTF800002|0
+4 The Field|FTF800003|FTF800003|10
