@@ -11,7 +11,16 @@ use warnings;
 
 sub _encode {
     state $load = do { require HTML::Entities };
-    HTML::Entities::encode_entities(shift);
+    my $val = shift;
+    # encode_entities change 0 (false) to empty string so we need to filter the
+    # value first
+    if (!defined $val) {
+        "";
+    } elsif (!$val) {
+        "$val";
+    } else {
+        HTML::Entities::encode_entities($val);
+    }
 }
 
 sub table {
@@ -176,7 +185,7 @@ sub table {
                 # any cell in the row has it set. once the attribute is set,
                 # no need to do the check again.
                 $bottom_border //=
-                  ( $bottom_border_rows || $cell->{bottom_border} || undef )
+                  ($bottom_border_rows // $cell->{bottom_border})
                   && " class=has_bottom_border";
 
                 if ( defined $cell->{raw_html} ) {
